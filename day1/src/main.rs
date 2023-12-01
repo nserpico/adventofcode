@@ -21,7 +21,6 @@ fn read_lines_process(filename: &str) -> Vec<String> {
             for (idx, word) in numbers.iter().enumerate() {
                 if work_line[i..].starts_with(word) {
                     work_line.insert_str(i + 1, &(idx + 1).to_string());
-                    println!("{}", work_line);
                     i += 1;
                     break;
                 }
