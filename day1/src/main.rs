@@ -49,6 +49,7 @@ fn do_it(lines: Vec<String>) {
     }
     println!("{}", sum)
 }
+
 fn part1() {
     let lines: Vec<String> = read_lines("input.txt");
     do_it(lines);
