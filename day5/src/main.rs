@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::{collections::HashMap, fs::read_to_string};
 
 fn read(filename: &str) -> String {
@@ -49,13 +50,13 @@ fn main() {
     // println!("{:?}", map1);
 
     let result = expand_seeds(seeds)
-        .into_iter()
+        .into_par_iter()
         .map(|seed| {
             let mut seed_transformer = seed;
             for raw_map in maps {
                 let section_maps = process_map(raw_map);
                 let results = section_maps
-                    .into_iter()
+                    .into_par_iter()
                     .map(|x| do_map(seed_transformer, &x))
                     .filter(|x| x != &(0 as u64))
                     .collect::<Vec<u64>>();
