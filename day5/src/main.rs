@@ -45,26 +45,28 @@ fn main() {
         .map(|s| s.parse::<u64>().unwrap())
         .collect::<Vec<u64>>();
     let maps = &chunks[1..];
-    // println!("{:?}", seeds);
-    let map1 = process_map(maps[0]);
-    // println!("{:?}", map1);
-
+    let processed_maps = maps
+        .into_iter()
+        .map(|m| process_map(m))
+        .collect::<Vec<Vec<Vec<u64>>>>();
+    let mut total = 0;
     let result = expand_seeds(seeds)
-        .into_par_iter()
+        .into_iter()
         .map(|seed| {
             let mut seed_transformer = seed;
-            for raw_map in maps {
-                let section_maps = process_map(raw_map);
-                let results = section_maps
-                    .into_par_iter()
-                    .map(|x| do_map(seed_transformer, &x))
-                    .filter(|x| x != &(0 as u64))
-                    .collect::<Vec<u64>>();
-                if results.len() == 1 {
-                    seed_transformer = results[0];
+            for section_maps in &processed_maps {
+                for m in section_maps {
+                    let res = do_map(seed_transformer, &m);
+                    if res != 0 {
+                        seed_transformer = res;
+                        break;
+                    }
                 }
             }
-            // println!("{}", seed_transformer);
+            total += 1;
+            if total % 1000000 == 0 {
+                println!("{}", total)
+            }
             seed_transformer
         })
         .min();
