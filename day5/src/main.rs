@@ -1,5 +1,7 @@
 use rayon::prelude::*;
 use std::{collections::HashMap, fs::read_to_string};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 
 fn read(filename: &str) -> String {
     read_to_string(filename).unwrap()
@@ -57,9 +59,9 @@ fn main() {
     println!("starting!");
     let total = exp_seeds.len();
     println!("{}", total);
-    let mut count = 0;
+    let count = Arc::new(AtomicU64::new(0));
     let result = exp_seeds
-        .into_iter()
+        .into_par_iter()
         .map(|seed| {
             let mut seed_transformer = seed;
             for section_maps in &processed_maps {
@@ -71,10 +73,11 @@ fn main() {
                     }
                 }
             }
-            count += 1;
-            if count % 100000 == 0 {
-                println!("{}/{}", count, total);
+            let c = count.fetch_add(1, Ordering::SeqCst);
+            if c % 10000 == 0 {
+                println!("{:?}/{}", c, total);
             }
+            // println!("{}", seed_transformer);
             seed_transformer
         })
         .min();
