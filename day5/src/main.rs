@@ -26,31 +26,39 @@ fn process_map(map_data: &str) -> Vec<Vec<u64>> {
 }
 
 fn expand_seeds(seeds: Vec<u64>) -> Vec<u64> {
-    let mut i = 0;
-    let mut expanded = vec![];
-    while i < seeds.len() - 1 {
-        for k in seeds[i]..(seeds[i] + seeds[i + 1]) {
-            expanded.push(k);
-        }
-        i += 2;
-    }
-    expanded
+    (0..seeds.len())
+        .into_par_iter()
+        .step_by(2)
+        .map(|i| {
+            (seeds[i]..(seeds[i] + seeds[i + 1]))
+                .into_par_iter()
+                .map(|k| k)
+                .collect::<Vec<u64>>()
+        })
+        .flatten()
+        .collect::<Vec<u64>>()
 }
 
 fn main() {
     let whole_content = read("input.txt");
     let chunks: Vec<&str> = whole_content.split("\n\n").collect();
     let seeds = chunks[0].split(" ").collect::<Vec<&str>>()[1..]
-        .into_iter()
+        .into_par_iter()
         .map(|s| s.parse::<u64>().unwrap())
         .collect::<Vec<u64>>();
+    println!("read seeds");
     let maps = &chunks[1..];
     let processed_maps = maps
-        .into_iter()
+        .into_par_iter()
         .map(|m| process_map(m))
         .collect::<Vec<Vec<Vec<u64>>>>();
-    let mut total = 0;
-    let result = expand_seeds(seeds)
+    println!("read maps");
+    let exp_seeds = expand_seeds(seeds);
+    println!("starting!");
+    let total = exp_seeds.len();
+    println!("{}", total);
+    let mut count = 0;
+    let result = exp_seeds
         .into_iter()
         .map(|seed| {
             let mut seed_transformer = seed;
@@ -63,9 +71,9 @@ fn main() {
                     }
                 }
             }
-            total += 1;
-            if total % 1000000 == 0 {
-                println!("{}", total)
+            count += 1;
+            if count % 100000 == 0 {
+                println!("{}/{}", count, total);
             }
             seed_transformer
         })
