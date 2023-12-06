@@ -4,7 +4,6 @@ use std::{collections::HashMap, fs::read_to_string};
 fn read(filename: &str) -> String {
     read_to_string(filename).unwrap()
 }
-// dest source range
 
 fn do_map(seed: u64, digits: &Vec<u64>) -> u64 {
     if seed >= digits[1] && seed < digits[1] + digits[2] {
@@ -46,20 +45,15 @@ fn main() {
         .into_par_iter()
         .map(|s| s.parse::<u64>().unwrap())
         .collect::<Vec<u64>>();
-    println!("read seeds");
     let maps = &chunks[1..];
     let processed_maps = maps
         .into_par_iter()
         .map(|m| process_map(m))
         .collect::<Vec<Vec<Vec<u64>>>>();
-    println!("read maps");
     let exp_seeds = expand_seeds(seeds);
-    println!("starting!");
     let total = exp_seeds.len();
-    println!("{}", total);
-    let mut count = 0;
     let result = exp_seeds
-        .into_iter()
+        .into_par_iter()
         .map(|seed| {
             let mut seed_transformer = seed;
             for section_maps in &processed_maps {
@@ -70,10 +64,6 @@ fn main() {
                         break;
                     }
                 }
-            }
-            count += 1;
-            if count % 100000 == 0 {
-                println!("{}/{}", count, total);
             }
             seed_transformer
         })
